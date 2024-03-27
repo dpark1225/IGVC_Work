@@ -24,6 +24,7 @@ int list_insert(list_t *list, int val, size_t pos);
 int list_rm(list_t *list, int *val, size_t pos);
 int list_set(list_t *list, int val, size_t pos);
 int list_get(list_t *list, int *val, size_t pos);
+void printNodes(list_t *list);
 
 list_t *list_alloc(void) {
   list_t *new = (list_t *)malloc(sizeof(list_t));
@@ -74,7 +75,9 @@ int list_append(list_t *list, int val) {
   }
   append->data = val;
   append->next = NULL;
-  list->tail->next = append;
+  if (list->tail != NULL) {
+    list->tail->next = append;
+  }
   list->tail = append;
   (list->size)++;
   if (list->size == 1) {
@@ -93,16 +96,33 @@ int list_insert(list_t *list, int val, size_t pos) {
     return 1;
   }
   node_t *temp = list->head;
-  node_t *next = list->head->next;
+  node_t *prev = NULL;
 
   insert->data = val;
+  insert->next = NULL;
 
-  for (size_t i = 0; i < pos; i++) {
-    temp = next;
-    next = temp->next;
+  if (pos == 0) {
+    insert->next = list->head;
+    list->head = insert;
+    if (list->size == 0) {
+      list->tail = insert;
+    }
+  } else {
+    for (size_t i = 0; i < pos; i++) {
+      prev = temp;
+      temp = temp->next;
+    }
+    insert->next = temp;
+    if (prev != NULL) {
+      prev->next = insert;
+    } else {
+      list->head = insert;
+    }
+    if (temp == NULL) {
+      list->tail = insert;
+    }
   }
-  temp->next = insert;
-  insert->next = next;
+  (list->size)++;
   return 0;
 }
 
@@ -110,7 +130,7 @@ int list_rm(list_t *list, int *val, size_t pos) {
   node_t *temp = list->head;
   node_t *prev = NULL;
 
-  if (pos > list->size) {
+  if (pos >= list->size) {
     return 1;
   }
 
@@ -141,7 +161,6 @@ int list_rm(list_t *list, int *val, size_t pos) {
 
 int list_set(list_t *list, int val, size_t pos) {
   node_t *temp = list->head;
-  node_t *next = list->head->next;
 
   if (list->size == 0) {
     printf("list size is 0");
@@ -159,17 +178,49 @@ int list_set(list_t *list, int val, size_t pos) {
 int list_get(list_t *list, int *val, size_t pos) {
 
   node_t *temp = list->head;
-  if (list->size == 0) {
+  if (list == NULL || list->size == 0 || list->head == NULL ||
+      pos >= list->size) {
     printf("list size is 0");
     return 1;
   }
 
   for (size_t i = 0; i < pos; i++) {
+    if (temp == NULL) {
+      printf("Position out of bounds\n");
+      return 1;
+    }
     temp = temp->next;
   }
-
+  if (temp == NULL) {
+    printf("Position out of bounds??\n");
+    return 1;
+  }
   *val = temp->data;
   return 0;
 }
 
-int main() { return 0; }
+int main(void) {
+
+  printf("TESTING LINKED LIST\n");
+
+  list_t *list = list_alloc();
+  printf("Allocation Succeeded\n");
+  list_append(list, 0);
+  printf("Appending Succeeded\n");
+  list_insert(list, 1, 1);
+  printf("Insert Succeeded\n");
+  list_append(list, 2);
+  printf("Append 2 Succeeded\n");
+
+  printNodes(list);
+
+  list_free(list);
+}
+
+void printNodes(list_t *list) {
+  int data;
+  for (size_t i = 0; i < list->size; i++) {
+    list_get(list, &data, i);
+    printf("data at %ldth index: %d\n", i, data);
+  }
+}
