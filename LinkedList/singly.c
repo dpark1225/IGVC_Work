@@ -69,6 +69,10 @@ int list_prepend(list_t *list, int val) {
 }
 
 int list_append(list_t *list, int val) {
+  if (list == NULL) {
+    printf("List not initialized");
+    return 1;
+  }
   node_t *append = (node_t *)malloc(sizeof(node_t));
   if (append == NULL) {
     return 1;
